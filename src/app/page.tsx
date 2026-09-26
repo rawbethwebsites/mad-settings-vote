@@ -101,6 +101,14 @@ export default function Home() {
           </div>
           <div className="absolute inset-0 bg-gradient-to-t from-brand-black via-transparent to-transparent" />
         </div>
+        <div className="mt-8 text-center">
+          <a
+            href="/movie-vote"
+            className="inline-block px-8 py-4 bg-brand-acid text-brand-black font-display font-black uppercase tracking-widest poster-border poster-shadow hover:-translate-y-1 hover:-translate-x-1 transition-all"
+          >
+            🎬 Vote for Movie →
+          </a>
+        </div>
       </EventChapter>
 
       <EventChapter

@@ -102,6 +102,17 @@ export default function GamesHub() {
           )}
         </div>
 
+        {/* Movie Vote Button */}
+        <div className="mb-8">
+          <a
+            href="/movie-vote"
+            className="inline-flex items-center gap-3 px-8 py-5 bg-brand-purple text-brand-cream font-display font-black uppercase tracking-widest poster-border poster-shadow hover:-translate-y-1 hover:-translate-x-1 transition-all"
+          >
+            <span className="text-3xl">🎬</span>
+            <span>Vote for Movie</span>
+          </a>
+        </div>
+
         {/* Game Cards */}
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
           {GAMES.map(g => (
