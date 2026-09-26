@@ -1,5 +1,5 @@
 export type Avatar = "fox" | "frog" | "bear" | "owl";
-export type View = "map" | "tent" | "campfire" | "trail" | "scores" | "host";
+export type View = "map" | "games" | "tent" | "campfire" | "campfire-live" | "campfire-fingers" | "arcade-2048" | "arcade-pacman" | "trail" | "scores" | "chat" | "host" | "movies";
 export type GameKey = "quiz" | "trail" | "fingers" | "missions";
 
 export type Camper = {
@@ -37,9 +37,21 @@ export type MissionSubmission = {
   submittedAt: number;
 };
 
+export type Movie = {
+  id: string;
+  title: string;
+  description?: string;
+  year?: number;
+  posterUrl?: string;
+  active: boolean;
+  createdAt: number;
+  voteCount: number;
+};
+
 export type CampState = {
-  version: 1;
+  version: 2;
   currentPlayerId: string | null;
+  hostPassword?: string;
   campers: Camper[];
   tents: Tent[];
   scores: ScoreEntry[];
@@ -47,6 +59,8 @@ export type CampState = {
   completedTrailSpots: string[];
   completedQuiz: boolean;
   gameOpen: Record<GameKey, boolean>;
+  movieVotes: Map<string, string>;
+  pendingMovies: Array<{ id: string; title: string; description?: string; year?: number }>;
 };
 
 export type QuizQuestion = {

@@ -1,10 +1,18 @@
 import type { Avatar, CampState, Camper, GameKey, MissionSubmission, ScoreEntry } from "./types";
 
-export const CAMP_STORAGE_KEY = "mad-settings:camp:v1";
+export const CAMP_STORAGE_KEY = "mad-settings:camp:v2";
+
+export interface Movie {
+  id: string;
+  title: string;
+  description?: string;
+  year?: number;
+}
 
 export const initialCampState: CampState = {
-  version: 1,
+  version: 2,
   currentPlayerId: null,
+  hostPassword: undefined,
   tents: [
     { id: "violet", name: "Violet Vipers", color: "#6d28d9" },
     { id: "acid", name: "Acid Ants", color: "#bef264" },
@@ -26,6 +34,8 @@ export const initialCampState: CampState = {
   completedTrailSpots: [],
   completedQuiz: false,
   gameOpen: { quiz: true, trail: true, fingers: true, missions: true },
+  movieVotes: new Map<string, string>(),
+  pendingMovies: [],
 };
 
 export interface CampStore {
@@ -40,15 +50,26 @@ export const localCampStore: CampStore = {
     try {
       const raw = window.localStorage.getItem(CAMP_STORAGE_KEY);
       if (!raw) return initialCampState;
-      const parsed = JSON.parse(raw) as CampState;
-      return parsed.version === 1 ? parsed : initialCampState;
+      const parsed = JSON.parse(raw) as CampState & { _movieVotes?: [string, string][] };
+      // Convert serialized array back to Map
+      if (parsed._movieVotes) {
+        parsed.movieVotes = new Map(parsed._movieVotes);
+        delete parsed._movieVotes;
+      }
+      return parsed as CampState;
     } catch {
       return initialCampState;
     }
   },
   save(state) {
     if (typeof window !== "undefined") {
-      window.localStorage.setItem(CAMP_STORAGE_KEY, JSON.stringify(state));
+      // Convert Map to array for serialization
+      const serializable = {
+        ...state,
+        _movieVotes: Array.from(state.movieVotes.entries()),
+      };
+      delete (serializable as any).movieVotes;
+      window.localStorage.setItem(CAMP_STORAGE_KEY, JSON.stringify(serializable));
     }
   },
   clear() {
@@ -121,4 +142,27 @@ export function approveMission(state: CampState, submissionId: string): CampStat
 
 export function toggleGame(state: CampState, game: GameKey): CampState {
   return { ...state, gameOpen: { ...state.gameOpen, [game]: !state.gameOpen[game] } };
+}
+
+export function voteForMovie(state: CampState, camperId: string, movieId: string): CampState {
+  const votes = new Map(state.movieVotes);
+  // Remove previous vote if exists
+  for (const key of votes.keys()) {
+    if (key === camperId) {
+      votes.delete(key);
+      break;
+    }
+  }
+  votes.set(camperId, movieId);
+  return { ...state, movieVotes: votes };
+}
+
+export function addMovie(state: CampState, title: string, description?: string, year?: number): CampState {
+  const movies = [...state.pendingMovies, { id: `movie-${Date.now()}`, title, description, year }];
+  return { ...state, pendingMovies: movies };
+}
+
+export function removeMovie(state: CampState, movieId: string): CampState {
+  const movies = state.pendingMovies.filter((m) => m.id !== movieId);
+  return { ...state, pendingMovies: movies };
 }

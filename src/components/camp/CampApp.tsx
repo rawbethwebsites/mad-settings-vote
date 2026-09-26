@@ -3,6 +3,9 @@
 import Image from "next/image";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { Award, Check, ChevronLeft, Flame, Footprints, Lock, Map, Settings2, Sparkles, TentTree, Trophy, Users } from "lucide-react";
+import { voteForMovie, addMovie, removeMovie } from "../../lib/camp/storage";
+import type { Movie } from "../../lib/camp/storage";
+import { MovieVoting } from "./MovieVoting";
 import { avatarEmoji, quizQuestions, tentMissions, trailSpots } from "@/data/camp";
 import { addScore, approveMission, initialCampState, joinCamp, localCampStore, submitMission, toggleGame } from "@/lib/camp/storage";
 import type { Avatar, CampState, GameKey, View } from "@/lib/camp/types";
@@ -15,7 +18,7 @@ const gameNames: Record<GameKey, string> = {
   missions: "Tent Missions",
 };
 
-function PosterButton({ children, onClick, variant = "purple", type = "button", disabled = false, ariaLabel }: {
+export function PosterButton({ children, onClick, variant = "purple", type = "button", disabled = false, ariaLabel }: {
   children: React.ReactNode;
   onClick?: () => void;
   variant?: "purple" | "acid" | "coral" | "cream" | "black";
@@ -238,7 +241,7 @@ function HostDashboard({ state, updateState, reset }: { state: CampState; update
 }
 
 function BottomNav({ view, setView }: { view: View; setView: (view: View) => void }) {
-  const items: { view: View; label: string; icon: React.ReactNode }[] = [{ view: "map", label: "Map", icon: <Map /> }, { view: "tent", label: "Tent", icon: <TentTree /> }, { view: "campfire", label: "Fire", icon: <Flame /> }, { view: "trail", label: "Trail", icon: <Footprints /> }, { view: "scores", label: "Scores", icon: <Trophy /> }];
+  const items: { view: View; label: string; icon: React.ReactNode }[] = [{ view: "map", label: "Map", icon: <Map /> }, { view: "tent", label: "Tent", icon: <TentTree /> }, { view: "campfire", label: "Fire", icon: <Flame /> }, { view: "trail", label: "Trail", icon: <Footprints /> }, { view: "scores", label: "Scores", icon: <Trophy /> }, { view: "movies", label: "Movies", icon: <span style={{ fontSize: 16 }}>🎬</span> }];
   return <nav className={styles.bottomNav} aria-label="Camp locations">{items.map((item) => <button key={item.view} className={view === item.view ? styles.navActive : ""} onClick={() => setView(item.view)} aria-current={view === item.view ? "page" : undefined}>{item.icon}<span>{item.label}</span></button>)}</nav>;
 }
 
@@ -257,5 +260,6 @@ export default function CampApp() {
   const reset = () => { localCampStore.clear(); setState(initialCampState); setView("map"); };
   if (!hydrated) return <main className={styles.loading}><TentTree aria-hidden="true" /><span>Pitching camp…</span></main>;
   if (!state.currentPlayerId) return <Onboarding state={state} onJoin={(name, avatar) => updateState(joinCamp(state, name, avatar))} />;
-  return <div className={styles.shell}><TopBar state={state} view={view} setView={setView} />{view === "map" && <CampMap setView={setView} />}{view === "tent" && <TentMissions state={state} updateState={updateState} />}{view === "campfire" && <Campfire state={state} updateState={updateState} />}{view === "trail" && <Trail state={state} updateState={updateState} />}{view === "scores" && <Leaderboards state={state} />}{view === "host" && <HostDashboard state={state} updateState={updateState} reset={reset} />}<BottomNav view={view} setView={setView} /></div>;
+  const isHost = state.hostPassword !== undefined;
+  return <div className={styles.shell}><TopBar state={state} view={view} setView={setView} />{view === "map" && <CampMap setView={setView} />}{view === "tent" && <TentMissions state={state} updateState={updateState} />}{view === "campfire" && <Campfire state={state} updateState={updateState} />}{view === "trail" && <Trail state={state} updateState={updateState} />}{view === "scores" && <Leaderboards state={state} />}{view === "host" && <HostDashboard state={state} updateState={updateState} reset={reset} />}{view === "movies" && <MovieVoting state={state} updateState={updateState} isHost={isHost} />}<BottomNav view={view} setView={setView} /></div>;
 }
